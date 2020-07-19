@@ -89,6 +89,7 @@ class Register_window(Frame):
         self.databasefile = self.path + r"\Database\appdatabase.db"
 
     def submit(self):
+        dat = database(filename = self.databasefile, table = "users")
         if (not self.username_e.get()) or (not self.password_e.get()):
             messagebox.showinfo("Error","You did not entered a username or a password")
         elif (" " in self.username_e.get()) or (" " in self.password_e.get()):
@@ -108,9 +109,14 @@ class Register_window(Frame):
             self.username_e.delete(0, END)
             self.password_e.delete(0, END)
             self.passwordr_e.delete(0, END)
+        elif dat.get_record("user",self.username_e.get()) is not None:
+            messagebox.showinfo("Error","Username already taken")
+            self.username_e.delete(0, END)
+            self.password_e.delete(0, END)
+            self.passwordr_e.delete(0, END)
         else:
-            dat = database(filename = self.databasefile, table = "users")
-            dat.insert_register(dict(user = self.username_e.get(), password = self.password_e.get()))
+            dat.insert(user = self.username_e.get(),password = self.password_e.get())
+            dat.sq_do("CREATE TABLE {} (name text, money int)".format(self.username_e.get()))
             dat.close()
             self.username_e.delete(0, END)
             self.password_e.delete(0, END)
@@ -151,7 +157,8 @@ class Login_window(Frame):
 
     def submit(self,controller):
         dat = database(filename = self.databasefile, table = "users")
-        password = dat.get_password(self.username_e.get())
+        password = dat.get_record("password", self.username_e.get())
+        dat.close()
         if password == self.password_e.get():
             messagebox.showinfo("Login","welcome in")
             controller.show_frame(Profile_window)

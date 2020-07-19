@@ -9,8 +9,8 @@ class database():
         self._mydb.execute(sql, params)
         self._mydb.commit()
         
-    def create_table(self, name, parameter1, parameter2):
-        self._appcursor.execute("CREATE TABLE {} ({} text, {} text)".format(name, parameter1, parameter2))
+    def create_table(self, name, **kwargs):
+        self._appcursor.execute("CREATE TABLE {} ({} {})".format(name, kwargs, kwargs.values()))
         self._mydb.commit()
 
     def close(self):
@@ -20,23 +20,21 @@ class database():
         self._appcursor.execute("INSERT INTO {} (user, password) VALUES (?, ?)".format(self._table) ,(values["user"],values["password"]))
         self._mydb.commit()
 
-    def insert(self, column, values):
-        self._appcursor.execute("INSERT INTO {} ({}) VALUES (?)".format(self._table, column) ,(values[column],))
-        self._mydb.commit()
+    def insert(self, **kwargs):
+        self._appcursor.execute("INSERT INTO {} ({}) VALUES ({})".format(self._table,kwargs.keys(), list(kwargs.values())))
 
     def update(self,column, newvalue):
         self._appcursor.execute("UPDATE {} set {} = {}".format(self._table, column, newvalue))
         self._mydb.commit()
 
-    def get_password(self, values):
+    def get_record(self, values1, value2):
         try:
             result = None
-            self._appcursor.execute("SELECT password from {} WHERE user = '{}'".format(self._table,values))
+            self._appcursor.execute("SELECT {} from {} WHERE user = '{}'".format(values1,self._table,value2))
             result = self._appcursor.fetchone()
             return result[0]
         except:
             print("No username available")
-
     @property
     def filename(self):
         return self._filename
