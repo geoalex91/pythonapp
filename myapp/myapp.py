@@ -35,34 +35,38 @@ class main_window(Frame):
         Frame.__init__(self,parent)
         #============background=================
         self.config(bg = "red")
+        global img
         img = Images()
-        self.background_image = img.get_images()[0]
-        backgr_img = Canvas(self,width = 500, height = 500, bg = "black")
-        backgr_img.create_image(250,280, image = self.background_image)
-        backgr_img.create_text(160,50,text = "Bitcoin app.\nRegister and earn some money", fill = "white")
-        backgr_img.place(relheight = 1.25, relwidth = 1.2, relx = -0.1, rely = -0.01)
+        self.background_image = img.get_images()[5]
+        self.backgr_img = Canvas(self,width = 500, height = 500, bg = "black")
+        self.backgr_img.create_image(250,280, image = self.background_image)
+        self.backgr_img.create_text(160,50,text = "Bitcoin app.\nRegister and earn some money", fill = "white")
+        self.backgr_img.place(relheight = 1.25, relwidth = 1.2, relx = -0.1, rely = -0.01)
         #==============Buttons===========
-        self.regbtn = img.get_images()[6]
-        Register_button = Button(backgr_img, height = 60,width = 100, command=lambda:controller.show_frame(Register_window),image = self.regbtn)
+        self.regbtn = img.get_images()[4]
+        self.logbtn = img.get_images()[1]
+        self.exbtn = img.get_images()[0]
+        Register_button = Button(self.backgr_img, height = 60,width = 100, command=lambda:controller.show_frame(Register_window),image = self.regbtn, borderwidth = 0)
         Register_button.place(relx = 0.7, rely = 0.1)
-        Login_button = Button(backgr_img, text = "  Login ", padx = 30, pady = 20, command = lambda:controller.show_frame(Login_window))
+        Login_button = Button(self.backgr_img, padx = 30, pady = 20, command = lambda:controller.show_frame(Login_window), image = self.logbtn, borderwidth = 0)
         Login_button.place(relx = 0.7, rely = 0.22)
-        Exit_button = Button(backgr_img, text = "   Exit   ",padx = 30, pady = 20, command = controller.quit)
+        Exit_button = Button(self.backgr_img,padx = 30, pady = 20, command = controller.quit, image = self.exbtn, borderwidth = 0)
         Exit_button.place(relx = 0.7, rely = 0.34)
 		
-
 class Register_window(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
+        global txtshow
         #===========background================
         self.config(bg = "red")
-        self.background_image = ImageTk.PhotoImage(Image.open(r"C:\Users\george\source\repos\myapp\myapp\images\background1.png"))
-        self.backgr_img = Canvas(self,width = 500, height = 500, bg = "black")
+        self.background_image = img.get_images()[6]
+        self.backgr_img = Canvas(self,width = 500, height = 500)
         self.backgr_img.create_image(250,280, image = self.background_image)
-        self.backgr_img.create_text(300,50,text = "Register form", fill = "white", font =("Arial", 18))
-        self.backgr_img.create_text(270,145,text = "Username", fill = "white")
-        self.backgr_img.create_text(270,170,text = "Password", fill = "white")
-        self.backgr_img.create_text(270,195,text = "Retype Password", fill = "white")
+        self.backgr_img.create_text(300,50,text = "Register form", fill = "black", font =("Arial", 18))
+        self.backgr_img.create_text(270,145,text = "Username", fill = "black")
+        self.backgr_img.create_text(270,170,text = "Password", fill = "black")
+        self.backgr_img.create_text(270,195,text = "Retype Password", fill = "black")
+        self.txtshow = self.backgr_img.create_text(230,250,text = "", fill = "white")
         self.backgr_img.place(relheight = 1.25, relwidth = 1.2, relx = -0.1, rely = -0.01)
         #============User input====================
         self.username_e = Entry(self.backgr_img)
@@ -75,10 +79,14 @@ class Register_window(Frame):
         self.passwordr_e.place(relx = 0.5, rely = 0.28)
         self.passwordr_e.insert(0,"Reenter a your password")
         #=============Buttons================
-        Goback = Button(self, text="Go back", command=lambda:[controller.show_frame(main_window),self.delete_text(txtshow)], padx = 15, pady = 10)
+        self.backbtn = img.get_images()[2]
+        self.sbmtbtn = img.get_images()[3]
+        Goback = Button(self, image = self.backbtn, command=lambda:[controller.show_frame(main_window),self.delete_text(self.txtshow)], padx = 15, pady = 10, borderwidth = 0)
         Goback.place(relx = 0.35, rely = 0.45)
-        submit_button = Button(self, text="Submit ", padx = 15, pady = 10, command = self.submit)
+        submit_button = Button(self, image = self.sbmtbtn, padx = 15, pady = 10, command = self.submit, borderwidth = 0)
         submit_button.place(relx = 0.58, rely = 0.45)
+        self.path = os.path.abspath(os.getcwd())
+        self.databasefile = self.path + r"\Database\appdatabase.db"
 
     def submit(self):
         if (not self.username_e.get()) or (not self.password_e.get()):
@@ -101,42 +109,54 @@ class Register_window(Frame):
             self.password_e.delete(0, END)
             self.passwordr_e.delete(0, END)
         else:
-            dat = database()
-            dat.insert_register("users",dict(user = self.username_e.get(), password = self.password_e.get()))
+            dat = database(filename = self.databasefile, table = "users")
+            dat.insert_register(dict(user = self.username_e.get(), password = self.password_e.get()))
             dat.close()
             self.username_e.delete(0, END)
             self.password_e.delete(0, END)
             self.passwordr_e.delete(0, END)
-            global txtshow
-            txtshow = self.backgr_img.create_text(230,250,text = "you successfuly made an account", fill = "white")
+            self.txtshow = self.backgr_img.create_text(260,360,text = "you successfuly made an account", fill = "black")
 
     def delete_text(self,text):
-                self.backgr_img.delete(text)
+            self.backgr_img.delete(text)
         
 class Login_window(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self,parent)
         #===========Background===========
         self.config(bg = "red")
-        self.background_image = ImageTk.PhotoImage(Image.open(r"C:\Users\george\source\repos\myapp\myapp\images\background1.png"))
-        backgr_img = Canvas(self,width = 500, height = 500, bg = "black")
+        self.background_image = img.get_images()[7]
+        backgr_img = Canvas(self,width = 500, height = 500)
         backgr_img.create_image(250,280, image = self.background_image)
         backgr_img.create_text(300,50,text = "Login", fill = "white", font =("Arial", 18))
         backgr_img.create_text(270,145,text = "Username", fill = "white")
         backgr_img.create_text(270,170,text = "Password", fill = "white")
         backgr_img.place(relheight = 1.25, relwidth = 1.2, relx = -0.1, rely = -0.01)
         #============User input====================
-        username_e = Entry(backgr_img)
-        username_e.place(relx = 0.5, rely = 0.2)
-        username_e.insert(0,"Enter a username")
-        password_e = Entry(backgr_img)
-        password_e.place(relx = 0.5, rely = 0.24)
-        password_e.insert(0,"Enter a password")
+        self.username_e = Entry(backgr_img)
+        self.username_e.place(relx = 0.5, rely = 0.2)
+        self.username_e.insert(0,"Enter a username")
+        self.password_e = Entry(backgr_img)
+        self.password_e.place(relx = 0.5, rely = 0.24)
+        self.password_e.insert(0,"Enter a password")
         #=============Buttons================
-        Goback = Button(self, text="Go back", command=lambda:controller.show_frame(main_window), padx = 15, pady = 10)
+        self.backbtn = img.get_images()[2]
+        self.sbmtbtn = img.get_images()[3]
+        Goback = Button(self, image = self.backbtn, command=lambda:controller.show_frame(main_window), padx = 15, pady = 10, borderwidth = 0)
         Goback.place(relx = 0.35, rely = 0.45)
-        submit_button = Button(self, text="Submit ", padx = 15, pady = 10)
+        submit_button = Button(self,image = self.sbmtbtn, padx = 15, pady = 10, borderwidth = 0, command = lambda:self.submit(controller))
         submit_button.place(relx = 0.58, rely = 0.45)
+        self.path = os.path.abspath(os.getcwd())
+        self.databasefile = self.path + r"\Database\appdatabase.db"
+
+    def submit(self,controller):
+        dat = database(filename = self.databasefile, table = "users")
+        password = dat.get_password(self.username_e.get())
+        if password == self.password_e.get():
+            messagebox.showinfo("Login","welcome in")
+            controller.show_frame(Profile_window)
+        else:
+            messagebox.showinfo("Error","Wrong username or password")
 
 class Profile_window(Frame):
     def __init__(self, parent, controller):
